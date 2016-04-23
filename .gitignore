@@ -1,0 +1,12 @@
+.*
+!/.gitignore
+!/.travis.yml
+/Build
+/blib/
+/_build/
+/META.yml
+/META.json
+/MYMETA*
+/pm_to_blib
+*.tar.gz
+*.bak
