@@ -3,7 +3,7 @@ Mac::ResFork
 
 This module provides access to individual resource metadata and data
 contained in Macintosh resource fork files. It was designed to work on
-resources from old (pre-OS X) software and it's suitability for newer software
+resources from old (pre-OS X) software and its suitability for newer software
 is unknown.
 
 INSTALLATION
