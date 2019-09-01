@@ -64,15 +64,20 @@ sub get_types {
 sub get_ids {
 
     my ($self, $type) = @_;
-
     return keys %{ $self->{types}->{$type} };
+
+}
+
+sub get_index {
+
+    my ($self, $type, $id) = @_;
+    return $self->{types}->{$type}->{$id}->{index};
 
 }
 
 sub get_name {
 
     my ($self, $type, $id) = @_;
-
     return $self->{types}->{$type}->{$id}->{name};
 
 }
