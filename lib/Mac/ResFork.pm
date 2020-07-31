@@ -1,9 +1,12 @@
-package Mac::ResFork 0.001;
+package Mac::ResFork 0.003;
 
 use strict;
 use warnings;
 
 use Encode qw/decode/;
+
+use constant APPLEDOUBLE_MAGIC => 0x00051607;
+use constant APPLEDOUBLE_OFFSET => 82;
 
 sub new {
 
@@ -25,6 +28,7 @@ sub get_offset {
 
     my $res = $self->{types}->{$type}->{$id};
     return if (! defined $res);
+
     return $res->{offset};
 
 }
@@ -92,7 +96,9 @@ sub _parse_type_list {
     $self->_goto( $list_offset );
     my $n_types = unpack 's>', $self->_read(2);
     return if ($n_types == 0xffff); # indicates empty list
+
     for (0..$n_types) { # count is one greater than given value
+
         my ($type, $n, $offset) = unpack 'A4s>2', $self->_read(8);
         my $trackback = tell $self->{fh};
         $self->_goto( $list_offset + $offset );
@@ -109,8 +115,6 @@ sub _parse_type_list {
             $self->_goto( $trackback );
             $off_data += $self->{off_data} + 4;
             
-            #die "Format error: resourcePtr not zero!"
-                #if ($fields[4] != 0);
             my $name = '';
             if ($off_name < 0xffff) {
                 my $trackback = tell $self->{fh};
@@ -129,6 +133,7 @@ sub _parse_type_list {
         }
 
         $self->_goto( $trackback );
+        
     }
 
     return;
@@ -150,7 +155,7 @@ sub _parse_map {
 
     $self->_parse_type_list();
 
-     return;
+    return;
 
 }
 
@@ -158,11 +163,17 @@ sub _parse_header {
 
     my ($self) = @_;
     $self->_goto(0);
+
+    my $magic = unpack "l>*", $self->_read(4);
+    my $is_appledouble = $magic == APPLEDOUBLE_MAGIC ? 1 : 0;
+    my $offset = $is_appledouble ? APPLEDOUBLE_OFFSET : 0;
+    $self->_goto($offset);
+
     my @fields = unpack "l>*", $self->_read(16);
-    $self->{off_data} = $fields[0];
-    $self->{off_map}  = $fields[1];
-    $self->{len_data} = $fields[2];
-    $self->{len_map}  = $fields[3];
+    $self->{off_data} = $fields[0] + $offset;
+    $self->{off_map}  = $fields[1] + $offset;
+    $self->{len_data} = $fields[2] + $offset;
+    $self->{len_map}  = $fields[3] + $offset;
 
 }
 
@@ -213,4 +224,3 @@ This modules parses the structure of a Macintosh resource fork and provides
 access to individiual data resource offsets and sizes by ID or name.
 
 =cut
-
